@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini Blog</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #40796c 0%, #8b3541 100%);
+    margin: 0;
+    padding: 40px;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .decoration {
+    position: fixed;
+    font-size: 40px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  h1 {
+    color: #6a4c93;
+    text-align: center;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  button {
+    background-color: #6a4c93;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  button:hover {
+    background-color: #573b7a;
+  }
+
+  .post-card {
+    background: #faf6ff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 4px solid #6a4c93;
+  }
+
+  .post-card h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+  }
+
+  .post-card p {
+    margin: 0;
+    color: #555;
+  }
+.animated-heading span {
+    display: inline-block;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+
+</style>
+</head>
+<body>
+
+<div class="decoration" style="top: 5%; left: 5%;">☁️</div>
+  <div class="decoration" style="top: 15%; right: 8%;">☁️</div>
+  <div class="decoration" style="bottom: 10%; left: 10%;">🌸</div>
+  <div class="decoration" style="bottom: 20%; right: 5%;">🌸</div>
+  <div class="decoration" style="top: 50%; left: 3%;">☁️</div>
+  <div class="decoration" style="top: 35%; right: 4%;">📔</div>
+  <div class="decoration" style="bottom: 40%; left: 6%;">📖</div>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+
+  function App() {
+  const [posts, setPosts] = React.useState([]);
+  const [title, setTitle] = React.useState('');
+  const [content, setContent] = React.useState('');
+  const [selectedPost, setSelectedPost] = React.useState(null);
+
+  React.useEffect(() => {
+    fetch('http://localhost:5000/posts')
+      .then(response => response.json())
+      .then(data => setPosts(data));
+  }, []);
+
+
+ 
+
+
+
+  function handleSubmit() {
+    fetch('http://localhost:5000/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, content: content })
+    })
+
+
+     
+      .then(response => response.json())
+      .then(newPost => {
+        setPosts([...posts, newPost]);
+        setTitle('');
+        setContent('');
+      });
+  }
+
+
+
+
+
+  function handleDelete(id) {
+    fetch('http://localhost:5000/posts/' + id, {
+      method: 'DELETE'
+    })
+      .then(() => {
+        setPosts(posts.filter(post => post.id !== id));
+      });
+
+}
+return (
+    <div className="container">
+
+      {selectedPost ? (
+        <div>
+          <button onClick={() => setSelectedPost(null)}>← GO BACK</button>
+          <h2>{selectedPost.title}</h2>
+          <p>{selectedPost.content}</p>
+        </div>
+      ) : (
+        <div>
+          
+
+          <h1 className="animated-heading">
+            <span style={{animationDelay: '0s'}}>Create</span>{' '}
+            <span style={{animationDelay: '0.3s'}}>Your</span>{' '}
+            <span style={{animationDelay: '0.6s'}}>Mini</span>{' '}
+            <span style={{animationDelay: '0.9s'}}>Blog</span>
+          </h1>
+
+          <input
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <textarea
+            placeholder="Content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <button onClick={handleSubmit}>Post Add Karo</button>
+
+          <hr />
+
+          {posts.map(post => (
+            <div className="post-card" key={post.id}>
+              <h3 onClick={() => setSelectedPost(post)} style={{cursor: 'pointer'}}>
+                {post.title}
+              </h3>
+              <p>{post.content}</p>
+              <button onClick={() => handleDelete(post.id)}>Delete</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+    </div>
+  );
+
+
+
+
+
+
+  }
+
+  
+
+
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+</script>
+
+  
+
+</body>
+</html>
